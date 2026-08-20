@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "ti84",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["serve.py", "8713"],
+      "port": 8713
+    }
+  ]
+}

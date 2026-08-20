@@ -1,0 +1,285 @@
+/* ---------------------------------------------------------------------------
+ * calc.css — TI-84 Plus livery.
+ *
+ * Charcoal case, light grey number pad, blue 2nd and green ALPHA, with the
+ * secondary legends printed above each key the way they are on the real one.
+ * ------------------------------------------------------------------------- */
+
+:root {
+  --case-1: #232327;
+  --case-2: #131316;
+  --bezel:  #17171a;
+  --edge:   #35353a;
+
+  --k-fn:    #3d3d42;
+  --k-fn-lo: #303035;
+  --k-top:   #4a4a50;
+  --k-top-lo:#3a3a40;
+  --k-num:   #d9d9d4;
+  --k-num-lo:#b9b9b3;
+  --k-2nd:   #1d6cd8;
+  --k-2nd-lo:#1553a8;
+  --k-alpha: #2f9c4c;
+  --k-alpha-lo:#237a3a;
+
+  --lg-2nd:   #62aeff;
+  --lg-alpha: #64d381;
+
+  --lcd-on:  #12160e;
+  --lcd-off: #9caa84;
+}
+
+* { box-sizing: border-box; }
+
+/* Nothing here should ever zoom, select, or show a callout on touch. iOS has
+   ignored user-scalable=no since iOS 10, but it does honour touch-action:
+   manipulation, which is what actually kills double-tap-to-zoom. */
+*, *::before, *::after {
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: #050506;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #f2f2f2;
+}
+body.booting .calc { opacity: 0; }
+
+.calc {
+  width: 100%;
+  max-width: 430px;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: calc(8px + env(safe-area-inset-top)) 10px calc(10px + env(safe-area-inset-bottom));
+  background:
+    radial-gradient(120% 70% at 50% -10%, #2c2c31 0%, transparent 60%),
+    linear-gradient(180deg, var(--case-1) 0%, var(--case-2) 100%);
+  transition: opacity .18s ease;
+}
+
+/* --- screen ---------------------------------------------------------- */
+
+.screen-bezel {
+  flex: 0 0 auto;
+  background: linear-gradient(180deg, #1b1b1f, #101013);
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+  padding: 12px 12px 11px;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,.75), 0 1px 0 rgba(255,255,255,.04);
+}
+
+#lcd-host { display: flex; justify-content: center; }
+
+/* the graph does its own panning and pinching, so the browser must not */
+#lcd {
+  touch-action: none;
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  border-radius: 2px;
+  background: var(--lcd-off);
+  box-shadow: 0 0 0 3px #2b2f26, 0 0 0 4px #0c0c0e, 0 2px 10px rgba(0,0,0,.5);
+}
+
+.brandbar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 5px 4px 2px;
+}
+.brand {
+  font-size: clamp(10px, 3.1vw, 13px);
+  font-weight: 700;
+  letter-spacing: .02em;
+  color: #e6e6e6;
+}
+.brand-sub {
+  font-size: clamp(5.5px, 1.7vw, 7.5px);
+  letter-spacing: .16em;
+  color: #7b7b82;
+  font-weight: 600;
+}
+
+/* --- keypad ---------------------------------------------------------- */
+
+.keypad {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: 0.86fr repeat(9, minmax(0, 1fr));
+  column-gap: 6px;
+  row-gap: 3px;
+}
+
+.cell {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+.legend {
+  flex: 0 0 auto;
+  pointer-events: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 2px;
+  height: 1.15em;
+  padding: 0 2px;
+  font-size: clamp(5.5px, 1.85vw, 8.5px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -.01em;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.lg-2nd   { color: var(--lg-2nd); }
+.lg-alpha { color: var(--lg-alpha); }
+
+.key {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  border: 0;
+  border-radius: 7px;
+  padding: 0 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: clamp(10px, 3.4vw, 15px);
+  letter-spacing: -.01em;
+  white-space: nowrap;
+  color: #fff;
+  background: linear-gradient(180deg, var(--k-fn) 0%, var(--k-fn-lo) 100%);
+  box-shadow: 0 1.5px 0 rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.09);
+  transition: transform .04s ease, filter .04s ease;
+  cursor: pointer;
+}
+
+.key-sm { font-size: clamp(7px, 2.35vw, 10px); }
+
+.k-top {
+  background: linear-gradient(180deg, var(--k-top) 0%, var(--k-top-lo) 100%);
+  font-size: clamp(8px, 2.6vw, 11px);
+  border-radius: 6px;
+}
+.k-num {
+  background: linear-gradient(180deg, var(--k-num) 0%, var(--k-num-lo) 100%);
+  color: #16161a;
+  font-weight: 700;
+  font-size: clamp(12px, 4.2vw, 18px);
+}
+.k-op    { font-size: clamp(13px, 4.4vw, 19px); }
+.k-enter { font-size: clamp(9px, 2.9vw, 12px); }
+
+.k-2nd {
+  background: linear-gradient(180deg, var(--k-2nd) 0%, var(--k-2nd-lo) 100%);
+  font-size: clamp(9px, 3vw, 13px);
+}
+.k-alpha {
+  background: linear-gradient(180deg, var(--k-alpha) 0%, var(--k-alpha-lo) 100%);
+  font-size: clamp(8px, 2.7vw, 12px);
+}
+
+.key.down {
+  transform: translateY(1.5px);
+  filter: brightness(1.28);
+  box-shadow: 0 0 0 rgba(0,0,0,.6), inset 0 1px 3px rgba(0,0,0,.35);
+}
+
+/* the 2nd / ALPHA keys stay lit while their layer is armed */
+.key.latched {
+  box-shadow: 0 1.5px 0 rgba(0,0,0,.6), inset 0 0 0 2px #fff, inset 0 1px 0 rgba(255,255,255,.09);
+  filter: brightness(1.2);
+}
+.key.locked { animation: lockPulse 1.1s ease-in-out infinite; }
+@keyframes lockPulse { 50% { filter: brightness(1.45); } }
+
+/* --- directional pad -------------------------------------------------- */
+
+.dpad {
+  position: relative;
+  place-self: center;
+  width: min(100%, 108px);
+  aspect-ratio: 1 / 1;
+  max-height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 32%, #56565c 0%, #3a3a3f 62%, #2e2e33 100%);
+  box-shadow: 0 2px 0 rgba(0,0,0,.6), inset 0 0 0 1px #26262a;
+}
+.dpad-hub {
+  position: absolute;
+  inset: 33%;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #232327, #16161a);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,.85);
+  pointer-events: none;
+}
+.arrow {
+  position: absolute;
+  width: 40%;
+  height: 40%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 30%;
+  cursor: pointer;
+}
+.arrow-up    { top: 0;    left: 30%; }
+.arrow-down  { bottom: 0; left: 30%; }
+.arrow-left  { left: 0;   top: 30%; }
+.arrow-right { right: 0;  top: 30%; }
+.arrow.down  { filter: brightness(1.6); }
+
+.chev { width: 0; height: 0; border: 6px solid transparent; display: block; }
+.arrow-up    .chev { border-bottom-color: #e9e9ea; margin-bottom: 5px; }
+.arrow-down  .chev { border-top-color: #e9e9ea;    margin-top: 5px; }
+.arrow-left  .chev { border-right-color: #e9e9ea;  margin-right: 5px; }
+.arrow-right .chev { border-left-color: #e9e9ea;   margin-left: 5px; }
+
+/* A phone gets the whole width, notch to notch. */
+@media (max-width: 520px) {
+  .calc { max-width: none; }
+}
+
+/* --- short screens ---------------------------------------------------- */
+@media (max-height: 720px) {
+  .brandbar { padding: 4px 4px 2px; }
+  .screen-bezel { padding: 8px 8px 7px; border-radius: 10px; }
+  .keypad { row-gap: 2px; }
+  .legend { height: 1em; }
+}
+
+/* --- landscape: put the screen beside the keypad ----------------------- */
+@media (orientation: landscape) and (max-height: 520px) {
+  .calc { max-width: none; flex-direction: row; align-items: stretch; gap: 12px; }
+  .screen-bezel { flex: 0 0 auto; align-self: center; }
+  .brandbar { display: none; }
+  .keypad { flex: 1 1 auto; }
+}
