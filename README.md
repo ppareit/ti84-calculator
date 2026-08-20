@@ -3,22 +3,32 @@
 A graphing calculator for the phone that behaves like a TI-84 Plus — same keypad,
 same screens, same arithmetic, same 96×64 display.
 
+### ▶ [whitdeckard09.github.io/ti84-calculator](https://whitdeckard09.github.io/ti84-calculator/)
+
 No build step and no dependencies. Open `index.html` and it runs.
 
 ---
 
 ## Running it
 
-**On a phone (recommended).** Serve the folder and open it in the phone browser,
-then use *Add to Home Screen*. It installs as a standalone app and works offline.
+**On a phone.** Open the link above in Safari, then **Share → Add to Home
+Screen**. It launches full screen with no browser chrome, works offline once
+loaded, and keeps your functions, window settings and notes between sessions.
+
+The layout has no fixed dimensions — it measures the screen, takes the widest
+LCD the case allows, and backs off a step if that would squeeze the keypad,
+so it fits every iPhone from the SE up to the Pro Max without any per-device
+tuning. Safe-area insets are respected, so nothing hides behind the Dynamic
+Island or the home indicator. Double-tap and pinch cannot zoom the page; the
+only pinch that does anything is on the graph.
+
+**On a desktop.** Double-click `index.html`, or serve the folder and visit
+`http://localhost:8000`. The number keys, operators, arrows, Enter and
+Backspace are wired to the physical keyboard.
 
 ```bash
 python3 serve.py 8000
 ```
-
-**On a desktop.** Double-click `index.html`, or use the command above and visit
-`http://localhost:8000`. The number keys, operators, arrows, Enter and Backspace
-are wired to the physical keyboard.
 
 (`serve.py` is `http.server` with caching turned off, so edits show up on
 reload. Any static server works.)
