@@ -80,7 +80,7 @@ exactly on `X=0` at the middle column — the same numbers the hardware gives.
 | `APPS` | Opens your notes. |
 | `MATH` | MATH (▸Frac, ▸Dec, ³, ³√, ˣ√, fMin, fMax, nDeriv, fnInt), NUM (abs, round, iPart, fPart, int, min, max, lcm, gcd), PRB (rand, nPr, nCr, !, randInt). |
 | `2nd MATH` → TEST | Relational operators and `and` / `or` / `xor` / `not`. |
-| `VARS` | Inserts a Y-variable reference, so `Y1` can appear inside another expression. |
+| `VARS` | `Y-VARS` → `1:Function…` inserts a Y-variable reference, so `Y1` can appear inside another expression. |
 | `2nd x⁻¹` → MATRIX | NAMES pastes `[A]`…`[J]` with their sizes, MATH holds `det(`, `ᵀ`, `dim(`, `Fill(`, `identity(`, `randM(`, `augment(`, `Matr▸list(`, `List▸matr(`, `cumSum(`, `ref(`, `rref(` and the four row operations, EDIT opens the matrix editor. |
 | `2nd ×` `2nd −` | `[` and `]`, for matrix literals such as `[[1,2][3,4]]`. |
 | `2nd (` `2nd )` | `{` and `}`, for list literals such as `{1,2,3}`. |
@@ -297,11 +297,10 @@ pressed:
 those rows so the screen reads correctly, but only the supported options can be
 selected.
 
-Two deliberate shortcuts:
+One deliberate shortcut, and one menu that is mostly a signpost:
 
-- `VARS` opens the Y-variable list directly instead of going through
-  `VARS → Y-VARS → Function`, because that is the only branch of that menu
-  that does anything here.
+- `VARS` shows both of its tabs, but only `Y-VARS → 1:Function…` leads
+  somewhere; the other entries are listed and do nothing.
 - `APPS` opens your notes. A real TI-84 lists installed applications there and
   this build has none, so the key goes to what most people press it looking
   for. The authentic route, `PRGM → EDIT`, works too.

@@ -198,7 +198,20 @@
         items.push({ label: S.yLabel(i), run: function () { App.insertToken(T.yvar(S.yNumber(i))); } });
       })(i);
     }
-    TI.Menu.open({ title: 'FUNCTION', items: items });
+    /* The same road as on the calculator: VARS, right to Y-VARS, 1:Function.
+       The other branches are listed so the screen reads correctly, but only
+       this one leads somewhere. */
+    function idle(label) { return { label: label, disabled: true }; }
+    TI.Menu.open({
+      tabs: ['VARS', 'Y-VARS'],
+      items: [
+        ['Window…', 'Zoom…', 'GDB…', 'Picture…', 'Statistics…', 'Table…', 'String…'].map(idle),
+        [
+          { label: 'Function…', run: function () { TI.Menu.open({ title: 'FUNCTION', items: items }); } },
+          idle('Parametric…'), idle('Polar…'), idle('On/Off…')
+        ]
+      ]
+    });
   }
 
   function openAngle() {

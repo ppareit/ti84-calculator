@@ -180,7 +180,7 @@
     reset();
     press('yeq xtn sq second mode');           /* Y1=X², QUIT */
     press('n3 sto xtn enter');                 /* 3→X */
-    press('vars n1 enter');                    /* VARS 1:Y1 */
+    press('vars right n1 n1 enter');           /* VARS, Y-VARS, 1:Function, 1:Y1 */
     check('Y1 evaluated at X=3', lastRows(2), ['Y₁', '9']);
 
     /* --- PRGM: create a note, type into it, read it back ------------------- */
