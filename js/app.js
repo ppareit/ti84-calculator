@@ -44,6 +44,26 @@
     render();
   };
 
+  /* Back to a freshly bought calculator: memory, settings, and every screen's
+     cursor. Unlike MEM > Reset it also restores MODE, TBLSET and the 2nd and
+     ALPHA latches, so what follows is repeatable. */
+  App.factoryReset = function () {
+    S.resetDefaults();
+    S.home.rows.length = 0;
+    S.entries.length = 0;
+    S.programs.length = 0;
+    S.notation = 'NORMAL'; S.digits = -1;
+    S.angle = 'RADIAN'; S.plotStyle = 'CONNECTED';
+    S.coord = true; S.grid = false; S.axes = true; S.label = false; S.expr = true;
+    S.tbl.start = 0; S.tbl.delta = 1; S.tbl.indpnt = 'AUTO'; S.tbl.depend = 'AUTO';
+    TI.Prgm.abort();
+    TI.Menu.closeAll();
+    App.resetScreens();
+    App.mod = null; App.insert = false; App.off = false;
+    S.save();
+    App.setScreen('home');
+  };
+
   /* --- menus ------------------------------------------------------------ */
   function insertItem(label, makeTok) {
     return { label: label, run: function () { App.insertToken(makeTok()); } };
@@ -307,6 +327,17 @@
   }
   App.press = press;
 
+  /* A key press the reader can see: the cap sinks for a moment, the way it
+     does under a finger or on the physical keyboard. */
+  App.pressVisible = function (id) {
+    var btn = document.querySelector('[data-key="' + id + '"]');
+    if (btn) {
+      btn.classList.add('down');
+      setTimeout(function () { btn.classList.remove('down'); }, 150);
+    }
+    press(id);
+  };
+
   /* --- rendering -------------------------------------------------------- */
   function render() {
     if (!ctx) return;
@@ -474,9 +505,7 @@
       var id = KEYMAP[e.key];
       if (!id) return;
       e.preventDefault();
-      press(id);
-      var btn = document.querySelector('[data-key="' + id + '"]');
-      if (btn) { btn.classList.add('down'); setTimeout(function () { btn.classList.remove('down'); }, 90); }
+      App.pressVisible(id);
     });
   }
 

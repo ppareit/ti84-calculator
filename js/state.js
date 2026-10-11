@@ -6,6 +6,12 @@
 
   var STORE_KEY = 'ti84.state.v1';
 
+  /* ?embed means the calculator sits inside someone else's page. It then
+     starts from a factory-fresh machine and leaves no trace in localStorage,
+     so a demo can neither read nor overwrite the user's own calculator. */
+  var EMBED = typeof location !== 'undefined' &&
+              /[?&]embed(?:[=&]|$)/.test(location.search);
+
   function defaultWindow() {
     return { Xmin: -10, Xmax: 10, Xscl: 1, Ymin: -10, Ymax: 10, Yscl: 1, Xres: 1 };
   }
@@ -66,6 +72,7 @@
   function serialiseToks(toks) { return toks.map(function (t) { return t; }); }
 
   S.save = function () {
+    if (EMBED) return;
     try {
       localStorage.setItem(STORE_KEY, JSON.stringify({
         notation: S.notation, digits: S.digits, angle: S.angle, plotStyle: S.plotStyle,
@@ -79,6 +86,7 @@
   };
 
   S.load = function () {
+    if (EMBED) return;
     try {
       var raw = localStorage.getItem(STORE_KEY);
       if (!raw) return;
@@ -106,6 +114,8 @@
     S.vars = {}; S.ans = 0; S.mats = {}; S.lists = {};
     for (var i = 0; i < 10; i++) { S.ys[i].toks = []; S.ys[i].on = true; }
   };
+
+  S.embed = EMBED;
 
   TI.State = S;
 

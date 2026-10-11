@@ -119,6 +119,9 @@ body.booting .calc { opacity: 0; }
   font-weight: 600;
 }
 
+/* Embedded in another page (?embed): the host supplies the title. */
+body.embed .brandbar { display: none; }
+
 /* --- keypad ---------------------------------------------------------- */
 
 .keypad {

@@ -17,6 +17,7 @@
 <link rel="stylesheet" href="css/calc.css">
 </head>
 <body class="booting">
+<script>if (/[?&]embed(?:[=&]|$)/.test(location.search)) document.body.classList.add('embed');</script>
 
 <div class="calc" role="application" aria-label="TI-84 Plus graphing calculator">
 
@@ -56,8 +57,9 @@
 <script src="js/screens/prgmedit.js"></script>
 <script src="js/screens/matedit.js"></script>
 <script src="js/app.js"></script>
+<script src="js/embed.js"></script>
 <script>
-  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http') && !document.body.classList.contains('embed')) {
     window.addEventListener('load', function () {
       navigator.serviceWorker.register('sw.js').catch(function () {});
     });
