@@ -550,6 +550,12 @@
         ctx.depth++;
         try { return ev(TI.Parser.parse(toks), ctx); } finally { ctx.depth--; }
       }
+      case 'ycall': {
+        if (n.args.length !== 1) throw err('ARGUMENT', n.pos);
+        var at = ev(n.args[0], ctx);
+        if (typeof at !== 'number') throw dataType();
+        return withVar(ctx, 'X', at, function () { return ev({ k: 'yvar', n: n.n, pos: n.pos }, ctx); });
+      }
       case 'mat': return M.copy(getMat(ctx, n.n, n.pos));
       case 'lst': return getList(ctx, n.n).slice();
       case 'matel': {

@@ -336,7 +336,7 @@ serve.py              no-cache dev server
 ## Tests
 
 ```bash
-node test/math.test.js    # 114 checks
+node test/math.test.js    # 119 checks
 node test/prgm.test.js    # 51 checks
 node test/matrix.test.js  # 746 recorded answers from a real TI-84 Plus
 node test/calc.test.js    # 16 checks

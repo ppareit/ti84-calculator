@@ -190,7 +190,15 @@
         return { k: 'lst', n: t.n, pos: pos };
       }
       case 'var':   return { k: 'var', n: t.n, pos: pos };
-      case 'yvar':  return { k: 'yvar', n: t.n, pos: pos };
+      case 'yvar': {
+        /* Y1(2) is the function's value at 2, not Y1 times 2 */
+        var ny = this.peek();
+        if (ny && ny.t === 'lp') {
+          this.next();
+          return { k: 'ycall', n: t.n, args: this.argList(pos), pos: pos };
+        }
+        return { k: 'yvar', n: t.n, pos: pos };
+      }
       case 'ans':   return { k: 'ans' };
       case 'const': return { k: 'const', n: t.f };
       case 'op':

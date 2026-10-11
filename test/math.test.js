@@ -177,6 +177,11 @@ ctx.vars.X = 4;
 eq('Y1', '9');
 eq('Y2', '27', 'Y-vars may reference each other');
 eq('Y3', 'ERR:UNDEFINED');
+eq('Y1(2)', '5', 'the value at 2, not Y1 times 2');
+eq('Y1(X+1)-Y1(X)', '2', 'a difference');
+eq('Y2(1)', '9', 'the argument reaches a Y-var inside a Y-var');
+eq('Y1(2)X', '20', 'and X is what it was afterwards');
+eq('Y1(1,2)', 'ERR:ARGUMENT');
 delete ctx.vars.X;
 
 /* ---- relational ----------------------------------------------------------- */
