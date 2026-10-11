@@ -1,5 +1,5 @@
 /* Offline cache so the calculator keeps working with no signal. */
-var CACHE = 'ti84-v3';
+var CACHE = 'ti84-v4';
 var ASSETS = [
   './', './index.html', './manifest.webmanifest', './css/calc.css',
   './js/font.js', './js/lcd.js', './js/state.js', './js/prgm.js', './js/keypad.js', './js/app.js',

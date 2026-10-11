@@ -302,6 +302,7 @@
     window: function () { App.setScreen('window'); },
     zoom:   function () { TI.Screens.graph.openZoomMenu(); },
     trace:  function () { App.setScreen('graph', { trace: true }); },
+    calc:   function () { TI.Screens.graph.openCalcMenu(); },
     graph:  function () { App.setScreen('graph'); },
     table:  function () { App.setScreen('table'); },
     tblset: function () { App.setScreen('tblset'); },

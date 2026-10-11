@@ -16,7 +16,7 @@
   var plotBuf = new Uint8Array(LCD.W * LCD.H);
   var cacheKey = null;
 
-  var mode = 'free';               /* free | trace | zoomcenter | box1 | box2 */
+  var mode = 'free';               /* free | trace | calc | zoomcenter | box1 | box2 */
   var pendingZoom = null;
   var cur = { c: 47, r: 31 };      /* free cursor, in pixels        */
   var trace = { fn: 0, c: 47 };
@@ -249,6 +249,11 @@
       }
     }
 
+    if (mode === 'calc') {
+      if (!fns.length) { mode = 'free'; calc = null; }
+      else { drawCalc(fns, blink); return; }
+    }
+
     if (mode === 'box2') {
       /* rubber band between the anchor and the live cursor */
       var x0 = Math.min(box.c, cur.c), x1 = Math.max(box.c, cur.c);
@@ -369,6 +374,241 @@
     });
   }
 
+  /* --- CALC (2nd TRACE) -------------------------------------------------- */
+  /* Each operation walks through its prompts on the graph, with the cursor
+     riding the curve as in TRACE. A bound can be pointed at with the arrows
+     or typed: the digits appear after X= and ENTER takes them. */
+  var CALC = {
+    value:     { prompts: [] },
+    zero:      { prompts: ['Left Bound?', 'Right Bound?', 'Guess?'], label: 'Zero' },
+    minimum:   { prompts: ['Left Bound?', 'Right Bound?', 'Guess?'], label: 'Minimum' },
+    maximum:   { prompts: ['Left Bound?', 'Right Bound?', 'Guess?'], label: 'Maximum' },
+    intersect: { prompts: ['First curve?', 'Second curve?', 'Guess?'], label: 'Intersection' },
+    dydx:      { prompts: [] },
+    integral:  { prompts: ['Lower Limit?', 'Upper Limit?'] }
+  };
+  var calc = null;   /* { op, stage, fn, x, toks, marks, lo, hi, first, out } */
+
+  function curve(fn) {
+    var ctx = S.evalCtx();
+    return function (x) {
+      var savedX = S.vars.X;
+      var y = evalAt(fn, x, ctx);
+      if (savedX === undefined) delete S.vars.X; else S.vars.X = savedX;
+      return y;
+    };
+  }
+
+  /* A search stops a few 1e-12 short of the round value it is closing in on.
+     The calculator's own search gives up much sooner (it reports 5.9999994
+     for a top at 6); here the last digits are dropped instead, so that a top
+     at 6 reads 6. */
+  function tidy(v, scale) {
+    if (!isFinite(v)) return v;
+    var q = Math.pow(10, Math.ceil(Math.log10(Math.max(Math.abs(scale), 1))) - 9);
+    return TI.Fmt.sigRound(Math.round(v / q) * q, 12) + 0;
+  }
+  function xScale() { return Math.max(Math.abs(S.win.Xmin), Math.abs(S.win.Xmax)); }
+  function yScale() { return Math.max(Math.abs(S.win.Ymin), Math.abs(S.win.Ymax)); }
+
+  function bisect(g, a, b) {
+    var ga = g(a);
+    if (ga === 0) return a;
+    if (g(b) === 0) return b;
+    for (var i = 0; i < 200; i++) {
+      var m = (a + b) / 2, gm = g(m);
+      if (gm === 0 || m === a || m === b) return m;
+      if ((gm < 0) === (ga < 0)) { a = m; ga = gm; } else b = m;
+    }
+    return (a + b) / 2;
+  }
+  /* The sign change of g in [lo, hi] nearest the guess, or null. */
+  function rootNear(g, lo, hi, guess) {
+    var n = 2 * XSPAN, best = null;
+    var px = lo, pg = g(lo);
+    for (var i = 1; i <= n; i++) {
+      var x = i === n ? hi : lo + i * (hi - lo) / n, gx = g(x);
+      if (isFinite(pg) && isFinite(gx) && pg * gx <= 0) {
+        var r = bisect(g, px, x);
+        if (best === null || Math.abs(r - guess) < Math.abs(best - guess)) best = r;
+      }
+      px = x; pg = gx;
+    }
+    return best;
+  }
+  /* Golden section brackets the optimum, parabolic steps finish it (the same
+     two stages as fMin( and fMax( in the evaluator). sign +1 finds a maximum. */
+  function extremumIn(f, lo, hi, sign) {
+    var g = function (t) { return sign * f(t); };
+    var a = lo, b = hi, gr = (Math.sqrt(5) - 1) / 2;
+    var c = b - gr * (b - a), d = a + gr * (b - a), gc = g(c), gd = g(d);
+    for (var i = 0; i < 200 && b - a > 1e-7; i++) {
+      if (gc > gd) { b = d; d = c; gd = gc; c = b - gr * (b - a); gc = g(c); }
+      else { a = c; c = d; gc = gd; d = a + gr * (b - a); gd = g(d); }
+    }
+    var x = (a + b) / 2;
+    for (var j = 0; j < 40; j++) {
+      var h = Math.max(Math.abs(x) * 1e-5, 1e-6);
+      var g0 = g(x - h), g1 = g(x), g2 = g(x + h), den = g0 - 2 * g1 + g2;
+      if (!(den < 0)) break;                       /* not concave here */
+      var st = -h * (g2 - g0) / (2 * den);
+      if (!isFinite(st) || x + st < lo || x + st > hi) break;
+      x += st;
+      if (Math.abs(st) < 1e-13 * Math.max(1, Math.abs(x))) break;
+    }
+    return x;
+  }
+  function simpson(f, a, b) {
+    var n = 2000, h = (b - a) / n, sum = f(a) + f(b);
+    for (var i = 1; i < n; i++) sum += (i % 2 ? 4 : 2) * f(a + i * h);
+    return sum * h / 3;
+  }
+
+  function startCalc(op) {
+    TI.App.setScreen('graph');
+    var fns = activeFns();
+    if (!fns.length || !windowValid()) return;
+    mode = 'calc';
+    calc = { op: op, stage: 0, fn: trace.fn < fns.length ? trace.fn : 0,
+             x: xAt(Math.max(0, Math.min(XSPAN, trace.c))), toks: [], marks: [], out: null };
+  }
+  function leaveCalc() {
+    if (calc) cur.c = Math.max(0, Math.min(XSPAN, colOf(calc.x)));
+    mode = 'free'; calc = null;
+  }
+  function calcError(name) {
+    leaveCalc();
+    TI.Menu.error(name);
+  }
+
+  function openCalcMenu() {
+    function item(label, op) { return { label: label, run: function () { startCalc(op); } }; }
+    TI.Menu.open({
+      tabs: ['CALCULATE'],
+      items: [[
+        item('value', 'value'), item('zero', 'zero'), item('minimum', 'minimum'),
+        item('maximum', 'maximum'), item('intersect', 'intersect'), item('dy/dx', 'dydx'),
+        item('∫f(x)dx', 'integral')
+      ]]
+    });
+  }
+
+  function drawCalc(fns, blink) {
+    if (calc.fn >= fns.length) calc.fn = 0;
+    var fn = fns[calc.fn], out = calc.out;
+    var y = out ? out.y : curve(fn)(calc.x);
+    drawExpr(fn);
+
+    /* a bound stays marked at the top of the plot, pointing into the interval */
+    calc.marks.forEach(function (m) {
+      var c = colOf(m.x);
+      for (var i = 0; i < 3; i++) for (var j = i - 2; j <= 2 - i; j++) LCD.px(c + m.dir * i, 10 + j, 1);
+    });
+
+    var c = colOf(calc.x), r = rowOf(y);
+    if (blink && isFinite(y) && c >= 0 && c <= XSPAN && r >= 0 && r <= YSPAN) drawCursor(c, r);
+
+    var line = out ? out.label : CALC[calc.op].prompts[calc.stage];
+    if (line) {
+      LCD.rect(0, 52, Array.from(line).length * 4 + 1, 6, 0);
+      LCD.textPx(0, 52, line, { small: true });
+    }
+    var typed = calc.toks.length || (calc.op === 'value' && !out);
+    if (out && out.only) {
+      LCD.rect(0, 58, LCD.W, 6, 0);
+      LCD.textPx(0, 58, out.only, { small: true });
+    } else if (typed) {
+      LCD.rect(0, 58, LCD.W, 6, 0);
+      LCD.textPx(0, 58, 'X=' + TI.Tok.toText(calc.toks), { small: true });
+    } else {
+      drawReadout(calc.x, y);
+    }
+  }
+
+  function calcDone(label, x, y) {
+    calc.x = tidy(x, xScale());
+    calc.out = { label: label, y: tidy(y, yScale()) };
+    calc.marks = [];
+    S.vars.X = calc.x; S.vars.Y = calc.out.y;      /* as the calculator leaves them */
+  }
+
+  function calcEnter(fns) {
+    var x = calc.x, f = curve(fns[calc.fn]);
+    if (calc.toks.length) {
+      try {
+        x = TI.Eval.evaluate(TI.Parser.parse(calc.toks), S.evalCtx()).value;
+      } catch (e) { calcError(e.ti || 'SYNTAX'); return; }
+      if (typeof x !== 'number' || !isFinite(x)) { calcError('DATA TYPE'); return; }
+      if (x < S.win.Xmin || x > S.win.Xmax) { calcError('INVALID'); return; }
+      calc.toks = [];
+      calc.x = x;
+    } else if (calc.op === 'value') return;
+
+    switch (calc.op) {
+      case 'value':
+        calc.out = { y: f(x) };
+        S.vars.X = x; S.vars.Y = calc.out.y;
+        return;
+      case 'dydx':
+        calc.out = { y: f(x), only: 'dy/dx=' + fitNum((f(x + 1e-3) - f(x - 1e-3)) / 2e-3, 14) };
+        return;
+      case 'intersect':
+        if (calc.stage === 0) { calc.first = calc.fn; calc.fn = (calc.fn + 1) % fns.length; calc.stage = 1; return; }
+        if (calc.stage === 1) { calc.second = calc.fn; calc.stage = 2; return; }
+        var f1 = curve(fns[calc.first]), f2 = curve(fns[calc.second]);
+        var cross = rootNear(function (t) { return f1(t) - f2(t); }, S.win.Xmin, S.win.Xmax, x);
+        if (cross === null || calc.first === calc.second) { calcError('NO SIGN CHNG'); return; }
+        calc.fn = calc.first;
+        calcDone(CALC.intersect.label, cross, f1(cross));
+        return;
+    }
+
+    /* the rest work between two bounds */
+    if (calc.stage === 0) { calc.lo = x; calc.marks.push({ x: x, dir: 1 }); calc.stage = 1; return; }
+    if (calc.stage === 1) {
+      if (calc.op !== 'integral' && x <= calc.lo) { calcError('BOUND'); return; }
+      calc.hi = x; calc.marks.push({ x: x, dir: -1 });
+      if (calc.op === 'integral') {
+        calc.marks = [];
+        calc.out = { y: f(x), only: '∫f(x)dx=' + fitNum(tidy(simpson(f, calc.lo, calc.hi), 1), 14) };
+        return;
+      }
+      calc.stage = 2; return;
+    }
+    if (x < calc.lo || x > calc.hi) { calcError('BOUND'); return; }
+    var at;
+    if (calc.op === 'zero') {
+      at = rootNear(f, calc.lo, calc.hi, x);
+      if (at === null) { calcError('NO SIGN CHNG'); return; }
+    } else {
+      at = extremumIn(f, calc.lo, calc.hi, calc.op === 'maximum' ? 1 : -1);
+    }
+    calcDone(CALC[calc.op].label, at, f(at));
+  }
+
+  function calcKey(k) {
+    var fns = activeFns();
+    if (!fns.length) { leaveCalc(); return; }
+    if (calc.out) {            /* the answer stays until the cursor is asked for again */
+      if (k.act === 'clear' || k.act === 'up' || k.act === 'down' ||
+          k.act === 'left' || k.act === 'right') leaveCalc();
+      return;
+    }
+    if (k.tok) { calc.toks.push(k.tok()); return; }
+    var typing = calc.toks.length > 0;
+    switch (k.act) {
+      case 'left': case 'right':
+        if (!typing) calc.x = xAt(Math.max(0, Math.min(XSPAN, colOf(calc.x) + (k.act === 'left' ? -1 : 1))));
+        return;
+      case 'up': case 'down':
+        if (!typing) calc.fn = (calc.fn + (k.act === 'down' ? 1 : -1) + fns.length) % fns.length;
+        return;
+      case 'del':   calc.toks.pop(); return;
+      case 'clear': if (typing) calc.toks = []; else leaveCalc(); return;
+      case 'enter': calcEnter(fns); return;
+    }
+  }
+
   /* --- keys ------------------------------------------------------------- */
   function step(dc, dr, fast) {
     var n = fast ? 5 : 1;
@@ -394,6 +634,7 @@
   }
 
   function key(k) {
+    if (mode === 'calc') { calcKey(k); return; }
     switch (k.act) {
       case 'up':    step(0, -1); return;
       case 'down':  step(0, 1);  return;
@@ -429,6 +670,7 @@
   }
 
   function enter(opts) {
+    if (mode === 'calc') { mode = 'free'; calc = null; }
     if (opts && opts.trace) {
       mode = 'trace';
       var fns = activeFns();
@@ -461,12 +703,12 @@
   TI.Screens = TI.Screens || {};
   TI.Screens.graph = {
     id: 'graph', draw: draw, key: key, enter: enter,
-    openZoomMenu: openZoomMenu,
+    openZoomMenu: openZoomMenu, openCalcMenu: openCalcMenu,
     pan: pan, pinch: pinch,
     settle: function () { saveZoom(); S.save(); },
     isTracing: function () { return mode === 'trace'; },
     reset: function () {
-      mode = 'free'; pendingZoom = null; cacheKey = null;
+      mode = 'free'; pendingZoom = null; cacheKey = null; calc = null;
       cur.c = 47; cur.r = 31; trace.fn = 0; trace.c = 47;
     }
   };

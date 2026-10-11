@@ -71,6 +71,7 @@ exactly on `X=0` at the middle column — the same numbers the hardware gives.
 | `ZOOM` | ZBox, Zoom In, Zoom Out, ZDecimal, ZSquare, ZStandard, ZTrig, ZInteger, ZoomFit, and the MEMORY tab (ZPrevious / ZoomSto / ZoomRcl). |
 | `GRAPH` | Plots every selected function. Free cursor with arrows; drag to pan and pinch to zoom. |
 | `TRACE` | Walks the curve pixel by pixel, reads out X and Y, up/down switches functions, and pans the window when you trace past the edge. |
+| `2nd TRACE` → CALC | value, zero, minimum, maximum, intersect, dy/dx and ∫f(x)dx on the plotted curves. Point at a bound with the arrows or type it after `X=`. Results are rounded to the round value they close in on, where the calculator's own search would show `5.9999994`; ∫f(x)dx does not shade. |
 | `2nd GRAPH` → TABLE | X and Y columns with a full-precision readout of the highlighted cell. Scrolls without limit in both directions. |
 | `2nd WINDOW` → TBLSET | TblStart, ΔTbl, Indpnt and Depend (Auto / Ask). |
 | `MODE` | NORMAL/SCI/ENG, FLOAT/0–9, RADIAN/DEGREE, CONNECTED/DOT. |
@@ -290,7 +291,7 @@ These parts of the real OS are not here, and their keys do nothing when
 pressed:
 
 `STAT` and its list editor (so `ZoomStat` reports `ERR:STAT`), the `LIST` menu
-(lists themselves work from `L₁` to `L₆` and `{ }`), `2nd TRACE` (CALC),
+(lists themselves work from `L₁` to `L₆` and `{ }`),
 `2nd Y=` (STAT PLOT), `DISTR`, `DRAW`, `LINK`, `CATALOG`, complex numbers
 (`a+bi`), and the PAR / POL / SEQ graphing modes. MODE displays
 those rows so the screen reads correctly, but only the supported options can be
@@ -338,6 +339,7 @@ serve.py              no-cache dev server
 node test/math.test.js    # 114 checks
 node test/prgm.test.js    # 51 checks
 node test/matrix.test.js  # 746 recorded answers from a real TI-84 Plus
+node test/calc.test.js    # 16 checks
 ```
 
 The first covers the parser, evaluator and formatter — each check is an entry a
@@ -351,6 +353,9 @@ precision. 743 match digit for digit; 3 rank-deficient `rref(` / `ref(` inputs
 differ in the last digit and are reported separately.
 `test/gen-matrix-fixtures.py` regenerates the file, given an emulator and a ROM
 image, which are not part of this repository.
+
+The fourth boots the whole calculator under Node and walks `2nd TRACE` (CALC)
+through its prompts, reading back what the screen draws.
 
 For the UI, serve the folder, open the app, and run this in the console:
 
