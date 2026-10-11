@@ -14,6 +14,9 @@
  *   { ti84: 'stop' }                           abandon a running sequence
  *   { ti84: 'finish' }                         press the rest of the running
  *                                              sequence at once (then 'done')
+ *   { ti84: 'theme', theme: 'light' }          the white livery; 'dark' is the
+ *                                              charcoal one (?theme=light in
+ *                                              the URL starts in it)
  *
  * and the frame answers to its parent:
  *
@@ -84,6 +87,7 @@
     if (m.ti84 === 'reset') { stop(); App.factoryReset(); touched = false; }
     else if (m.ti84 === 'stop') stop();
     else if (m.ti84 === 'finish') finish();
+    else if (m.ti84 === 'theme') App.setTheme(m.theme);
     else if (m.ti84 === 'press') {
       var d = Number(m.delay);
       play(m.keys, d >= 0 ? d : 400, m.id);
