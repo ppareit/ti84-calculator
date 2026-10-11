@@ -3,6 +3,10 @@
  *
  * Charcoal case, light grey number pad, blue 2nd and green ALPHA, with the
  * secondary legends printed above each key the way they are on the real one.
+ *
+ * data-theme="light" on <html> swaps it for the white livery: white case and
+ * keys, dark number pad. index.html picks it for a device in light mode, or
+ * when asked with ?theme=light (?theme=dark keeps the charcoal one).
  * ------------------------------------------------------------------------- */
 
 :root {
@@ -27,6 +31,74 @@
 
   --lcd-on:  #12160e;
   --lcd-off: #9caa84;
+  --lcd-ring: #2b2f26;
+
+  color-scheme: dark;
+  --page:      #050506;
+  --case-glow: #2c2c31;
+  --brand:     #e6e6e6;
+  --brand-sub: #7b7b82;
+
+  --k-text:     #fff;
+  --k-num-text: #16161a;
+  --k-shadow:   0 1.5px 0 rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.09);
+  --k-down:     brightness(1.28);
+
+  --bezel-1:      #1b1b1f;
+  --bezel-2:      #101013;
+  --bezel-shadow: inset 0 2px 8px rgba(0,0,0,.75), 0 1px 0 rgba(255,255,255,.04);
+  --dpad-1:    #56565c;
+  --dpad-2:    #3a3a3f;
+  --dpad-3:    #2e2e33;
+  --dpad-ring: #26262a;
+  --hub-1:     #232327;
+  --hub-2:     #16161a;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --case-1: #f7f7f5;
+  --case-2: #e4e4e1;
+  --edge:   #b4b4b0;
+
+  --k-fn:    #ffffff;
+  --k-fn-lo: #ededea;
+  --k-top:   #ffffff;
+  --k-top-lo:#ededea;
+  --k-num:   #4b4b52;
+  --k-num-lo:#35353b;
+  --k-2nd:   #2f7fe0;
+  --k-2nd-lo:#1d62bd;
+  --k-alpha: #35a653;
+  --k-alpha-lo:#27853f;
+
+  --lg-2nd:   #1560c4;
+  --lg-alpha: #1c7a36;
+
+  --lcd-on:  #101214;
+  --lcd-off: #f4f6f0;
+  --lcd-ring: #77777b;
+
+  --page:      #e4e4e1;
+  --case-glow: #ffffff;
+  --brand:     #1c1c20;
+  --brand-sub: #6b6b72;
+
+  --k-text:     #1b1b1f;
+  --k-num-text: #fff;
+  --k-shadow:   0 1.5px 0 rgba(0,0,0,.3), inset 0 0 0 1px rgba(0,0,0,.14);
+  --k-down:     brightness(.86);
+
+  --bezel-1:      #d6d6d3;
+  --bezel-2:      #c6c6c3;
+  --bezel-shadow: inset 0 1px 4px rgba(0,0,0,.22), 0 1px 0 rgba(255,255,255,.6);
+  --dpad-1:    #7b7b81;
+  --dpad-2:    #606066;
+  --dpad-3:    #54545a;
+  --dpad-ring: #4a4a4f;
+  --hub-1:     #404045;
+  --hub-2:     #323237;
 }
 
 * { box-sizing: border-box; }
@@ -46,7 +118,7 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  background: #050506;
+  background: var(--page);
   overflow: hidden;
   overscroll-behavior: none;
   -webkit-text-size-adjust: 100%;
@@ -70,7 +142,7 @@ body.booting .calc { opacity: 0; }
   flex-direction: column;
   padding: calc(8px + env(safe-area-inset-top)) 10px calc(10px + env(safe-area-inset-bottom));
   background:
-    radial-gradient(120% 70% at 50% -10%, #2c2c31 0%, transparent 60%),
+    radial-gradient(120% 70% at 50% -10%, var(--case-glow) 0%, transparent 60%),
     linear-gradient(180deg, var(--case-1) 0%, var(--case-2) 100%);
   transition: opacity .18s ease;
 }
@@ -79,11 +151,11 @@ body.booting .calc { opacity: 0; }
 
 .screen-bezel {
   flex: 0 0 auto;
-  background: linear-gradient(180deg, #1b1b1f, #101013);
+  background: linear-gradient(180deg, var(--bezel-1), var(--bezel-2));
   border: 1px solid var(--edge);
   border-radius: 12px;
   padding: 12px 12px 11px;
-  box-shadow: inset 0 2px 8px rgba(0,0,0,.75), 0 1px 0 rgba(255,255,255,.04);
+  box-shadow: var(--bezel-shadow);
 }
 
 #lcd-host { display: flex; justify-content: center; }
@@ -96,7 +168,7 @@ body.booting .calc { opacity: 0; }
   image-rendering: crisp-edges;
   border-radius: 2px;
   background: var(--lcd-off);
-  box-shadow: 0 0 0 3px #2b2f26, 0 0 0 4px #0c0c0e, 0 2px 10px rgba(0,0,0,.5);
+  box-shadow: 0 0 0 3px var(--lcd-ring), 0 0 0 4px #0c0c0e, 0 2px 10px rgba(0,0,0,.5);
 }
 
 .brandbar {
@@ -110,12 +182,12 @@ body.booting .calc { opacity: 0; }
   font-size: clamp(10px, 3.1vw, 13px);
   font-weight: 700;
   letter-spacing: .02em;
-  color: #e6e6e6;
+  color: var(--brand);
 }
 .brand-sub {
   font-size: clamp(5.5px, 1.7vw, 7.5px);
   letter-spacing: .16em;
-  color: #7b7b82;
+  color: var(--brand-sub);
   font-weight: 600;
 }
 
@@ -172,9 +244,9 @@ body.booting .calc { opacity: 0; }
   font-size: clamp(10px, 3.4vw, 15px);
   letter-spacing: -.01em;
   white-space: nowrap;
-  color: #fff;
+  color: var(--k-text);
   background: linear-gradient(180deg, var(--k-fn) 0%, var(--k-fn-lo) 100%);
-  box-shadow: 0 1.5px 0 rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.09);
+  box-shadow: var(--k-shadow);
   transition: transform .04s ease, filter .04s ease;
   cursor: pointer;
 }
@@ -188,7 +260,7 @@ body.booting .calc { opacity: 0; }
 }
 .k-num {
   background: linear-gradient(180deg, var(--k-num) 0%, var(--k-num-lo) 100%);
-  color: #16161a;
+  color: var(--k-num-text);
   font-weight: 700;
   font-size: clamp(12px, 4.2vw, 18px);
 }
@@ -197,16 +269,18 @@ body.booting .calc { opacity: 0; }
 
 .k-2nd {
   background: linear-gradient(180deg, var(--k-2nd) 0%, var(--k-2nd-lo) 100%);
+  color: #fff;
   font-size: clamp(9px, 3vw, 13px);
 }
 .k-alpha {
   background: linear-gradient(180deg, var(--k-alpha) 0%, var(--k-alpha-lo) 100%);
+  color: #fff;
   font-size: clamp(8px, 2.7vw, 12px);
 }
 
 .key.down {
   transform: translateY(1.5px);
-  filter: brightness(1.28);
+  filter: var(--k-down);
   box-shadow: 0 0 0 rgba(0,0,0,.6), inset 0 1px 3px rgba(0,0,0,.35);
 }
 
@@ -227,14 +301,14 @@ body.booting .calc { opacity: 0; }
   aspect-ratio: 1 / 1;
   max-height: 100%;
   border-radius: 50%;
-  background: radial-gradient(circle at 50% 32%, #56565c 0%, #3a3a3f 62%, #2e2e33 100%);
-  box-shadow: 0 2px 0 rgba(0,0,0,.6), inset 0 0 0 1px #26262a;
+  background: radial-gradient(circle at 50% 32%, var(--dpad-1) 0%, var(--dpad-2) 62%, var(--dpad-3) 100%);
+  box-shadow: 0 2px 0 rgba(0,0,0,.6), inset 0 0 0 1px var(--dpad-ring);
 }
 .dpad-hub {
   position: absolute;
   inset: 33%;
   border-radius: 50%;
-  background: linear-gradient(180deg, #232327, #16161a);
+  background: linear-gradient(180deg, var(--hub-1), var(--hub-2));
   box-shadow: inset 0 1px 3px rgba(0,0,0,.85);
   pointer-events: none;
 }

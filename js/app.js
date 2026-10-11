@@ -18,6 +18,44 @@
   var canvas, ctx, scale = 4;
   var COLORS = { on: '#12160e', off: '#9caa84' };
 
+  /* --- livery ------------------------------------------------------------ */
+
+  /* The LCD is painted on a canvas and the browser chrome takes its colour
+     from a meta tag, so both have to ask calc.css what is showing. */
+  function readColors() {
+    var cs = getComputedStyle(document.documentElement);
+    COLORS.on = cs.getPropertyValue('--lcd-on').trim() || COLORS.on;
+    COLORS.off = cs.getPropertyValue('--lcd-off').trim() || COLORS.off;
+    var meta = document.querySelector('meta[name="theme-color"]');
+    var page = cs.getPropertyValue('--page').trim();
+    if (meta && page) meta.setAttribute('content', page);
+  }
+
+  function applyTheme(name) {
+    var root = document.documentElement;
+    if (name === 'light') root.setAttribute('data-theme', 'light');
+    else root.removeAttribute('data-theme');
+    readColors();
+    if (ctx) render();
+  }
+
+  /* 'light' is the white livery, anything else the charcoal one. A livery
+     that was asked for stays; until then the calculator follows the device. */
+  var themeFixed = false;
+  App.setTheme = function (name) {
+    themeFixed = true;
+    applyTheme(name);
+  };
+
+  function followDevice() {
+    themeFixed = /[?&]theme=(light|dark)(?:&|$)/.test(location.search);
+    var scheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)');
+    if (!scheme || !scheme.addEventListener) return;
+    scheme.addEventListener('change', function (e) {
+      if (!themeFixed) applyTheme(e.matches ? 'light' : 'dark');
+    });
+  }
+
   /* --- screens ---------------------------------------------------------- */
   function cur() { return TI.Screens[App.screen]; }
 
@@ -511,6 +549,8 @@
     canvas = document.getElementById('lcd');
     ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = false;
+    readColors();
+    followDevice();
 
     S.load();
     TI.Prgm.setHost(TI.Screens.home);
