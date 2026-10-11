@@ -5,6 +5,9 @@
  * The host sends messages to the frame:
  *
  *   { ti84: 'reset' }                          factory-fresh calculator
+ *   { ti84: 'reset', keys: 'yeq n1 graph' }    the same, then these keys at
+ *                                              once and unseen: a known state
+ *                                              to start a sequence from
  *   { ti84: 'press', keys: 'yeq n1:120 enter', press these keys, in order,
  *     delay: 400, id: 7 }                      waiting `delay` ms after each
  *                                              (default 400); a key written
@@ -84,7 +87,12 @@
   window.addEventListener('message', function (e) {
     var m = e.data;
     if (e.source !== window.parent || !m || typeof m !== 'object') return;
-    if (m.ti84 === 'reset') { stop(); App.factoryReset(); touched = false; }
+    if (m.ti84 === 'reset') {
+      stop(); App.factoryReset(); touched = false;
+      String(m.keys || '').split(/\s+/).filter(Boolean).forEach(function (key) {
+        App.press(key.split(':')[0]);
+      });
+    }
     else if (m.ti84 === 'stop') stop();
     else if (m.ti84 === 'finish') finish();
     else if (m.ti84 === 'theme') App.setTheme(m.theme);
