@@ -553,8 +553,13 @@
       case 'ycall': {
         if (n.args.length !== 1) throw err('ARGUMENT', n.pos);
         var at = ev(n.args[0], ctx);
+        var yAt = function (x) {
+          return withVar(ctx, 'X', x, function () { return ev({ k: 'yvar', n: n.n, pos: n.pos }, ctx); });
+        };
+        /* Y1({1,2,3}) is the list of the values at 1, 2 and 3 */
+        if (M.isList(at)) return at.map(function (x) { return round14(needNumber(yAt(x))); });
         if (typeof at !== 'number') throw dataType();
-        return withVar(ctx, 'X', at, function () { return ev({ k: 'yvar', n: n.n, pos: n.pos }, ctx); });
+        return yAt(at);
       }
       case 'mat': return M.copy(getMat(ctx, n.n, n.pos));
       case 'lst': return getList(ctx, n.n).slice();

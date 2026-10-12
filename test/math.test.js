@@ -182,6 +182,8 @@ eq('Y1(X+1)-Y1(X)', '2', 'a difference');
 eq('Y2(1)', '9', 'the argument reaches a Y-var inside a Y-var');
 eq('Y1(2)X', '20', 'and X is what it was afterwards');
 eq('Y1(1,2)', 'ERR:ARGUMENT');
+eq('max(Y1({1,2,3}))', '7', 'a list gives the list of values');
+eq('min(Y1({1,2,3}))', '3');
 delete ctx.vars.X;
 
 /* ---- relational ----------------------------------------------------------- */
