@@ -191,13 +191,23 @@
     });
   }
 
-  function openYVars() {
+  function yVarItems() {
     var items = [];
     for (var i = 0; i < 10; i++) {
       (function (i) {
         items.push({ label: S.yLabel(i), run: function () { App.insertToken(T.yvar(S.yNumber(i))); } });
       })(i);
     }
+    return items;
+  }
+
+  /* ALPHA F4: the shortcut straight to the Y-variables. */
+  function openYVarShortcut() {
+    TI.Menu.open({ title: 'YVAR', items: yVarItems() });
+  }
+
+  function openYVars() {
+    var items = yVarItems();
     /* The same road as on the calculator: VARS, right to Y-VARS, 1:Function.
        The other branches are listed so the screen reads correctly, but only
        this one leads somewhere. */
@@ -328,6 +338,7 @@
     prgm:   function () { App.screen === 'prgmedit' ? openPrgmCtl() : openPrgm(); },
     apps:   openApps,
     vars:   openYVars,
+    yvar:   openYVarShortcut,
     angle:  openAngle,
     mem:    openMem
   };

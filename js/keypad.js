@@ -21,7 +21,7 @@
       { id: 'yeq',    cls: 'k-top', label: 'Y=',     main: act('yeq'),    s2: 'STAT PLOT', s: act('statplot') },
       { id: 'window', cls: 'k-top', label: 'WINDOW', main: act('window'), s2: 'TBLSET',    s: act('tblset') },
       { id: 'zoom',   cls: 'k-top', label: 'ZOOM',   main: act('zoom'),   s2: 'FORMAT',    s: act('format') },
-      { id: 'trace',  cls: 'k-top', label: 'TRACE',  main: act('trace'),  s2: 'CALC',      s: act('calc') },
+      { id: 'trace',  cls: 'k-top', label: 'TRACE',  main: act('trace'),  s2: 'CALC',      s: act('calc'), a2: 'F4', a: act('yvar') },
       { id: 'graph',  cls: 'k-top', label: 'GRAPH',  main: act('graph'),  s2: 'TABLE',     s: act('table') }
     ],
     /* ---- 2nd / ALPHA block + directional pad -------------------------- */

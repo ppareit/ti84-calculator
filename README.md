@@ -81,6 +81,7 @@ exactly on `X=0` at the middle column — the same numbers the hardware gives.
 | `MATH` | MATH (▸Frac, ▸Dec, ³, ³√, ˣ√, fMin, fMax, nDeriv, fnInt), NUM (abs, round, iPart, fPart, int, min, max, lcm, gcd), PRB (rand, nPr, nCr, !, randInt). |
 | `2nd MATH` → TEST | Relational operators and `and` / `or` / `xor` / `not`. |
 | `VARS` | `Y-VARS` → `1:Function…` inserts a Y-variable reference, so `Y1` can appear inside another expression. |
+| `ALPHA` `F4` | The shortcut to the same Y-variables: `ALPHA` `TRACE`, then `1:Y1`. |
 | `2nd x⁻¹` → MATRIX | NAMES pastes `[A]`…`[J]` with their sizes, MATH holds `det(`, `ᵀ`, `dim(`, `Fill(`, `identity(`, `randM(`, `augment(`, `Matr▸list(`, `List▸matr(`, `cumSum(`, `ref(`, `rref(` and the four row operations, EDIT opens the matrix editor. |
 | `2nd ×` `2nd −` | `[` and `]`, for matrix literals such as `[[1,2][3,4]]`. |
 | `2nd (` `2nd )` | `{` and `}`, for list literals such as `{1,2,3}`. |

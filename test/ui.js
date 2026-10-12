@@ -183,6 +183,13 @@
     press('vars right n1 n1 enter');           /* VARS, Y-VARS, 1:Function, 1:Y1 */
     check('Y1 evaluated at X=3', lastRows(2), ['Y₁', '9']);
 
+    /* --- ALPHA F4 is the shortcut to the same Y-variables ------------------ */
+    reset();
+    press('yeq xtn sq second mode');           /* Y1=X², QUIT */
+    press('n3 sto xtn enter');                 /* 3→X */
+    press('alpha trace n1 enter');             /* F4, 1:Y1 */
+    check('Y1 through ALPHA F4', lastRows(2), ['Y₁', '9']);
+
     /* --- PRGM: create a note, type into it, read it back ------------------- */
     reset();
     press('prgm right right n1');              /* PRGM > NEW > 1:Create New */
