@@ -415,14 +415,15 @@
   }
 
   /* --- canvas sizing ----------------------------------------------------
-   * Every LCD pixel must land on a whole number of device pixels or the
-   * display shimmers, so the scale is an integer. Take the widest screen the
-   * case allows, then step back down if that would squeeze the keypad below a
-   * comfortable key height. Doing it this way fits any phone without knowing
-   * anything about the phone.
+   * Render LCD pixels as integer blocks in the backing canvas. Fit its visible
+   * size continuously, so rounding never wastes a strip of available space.
+   * Take the widest screen the
+   * case allows, then step back down only if the keypad would become too small
+   * to use. Give the output priority over generous key heights. This fits any
+   * phone without knowing anything about the phone.
    */
   var KEY_ROWS = 10;
-  var MIN_ROW_H = 40;          /* CSS px per key cell, legend included */
+  var MIN_ROW_H = 22;          /* CSS px per key cell, legend included */
 
   function px(el, prop) { return parseFloat(getComputedStyle(el)[prop]) || 0; }
 
@@ -431,6 +432,7 @@
     var calc = document.querySelector('.calc');
     var bezel = document.querySelector('.screen-bezel');
     var brand = document.querySelector('.brandbar');
+    var keypad = document.querySelector('.keypad');
     if (!host || !calc || !bezel) return;
 
     var dpr = window.devicePixelRatio || 1;
@@ -440,24 +442,22 @@
 
     var s;
     if (landscape) {
-      s = Math.floor(Math.min(hostW * dpr / LCD.W, (contentH - 20) * dpr / LCD.H));
+      s = Math.min(hostW / LCD.W, (contentH - 20) / LCD.H);
     } else {
       var chrome = px(bezel, 'paddingTop') + px(bezel, 'paddingBottom') +
                    px(bezel, 'borderTopWidth') + px(bezel, 'borderBottomWidth') +
                    (brand ? brand.offsetHeight : 0);
-      s = Math.floor(hostW * dpr / LCD.W);
-      while (s > 1) {
-        var keypadH = contentH - chrome - (LCD.H * s / dpr);
-        if (keypadH / KEY_ROWS >= MIN_ROW_H) break;
-        s--;
-      }
+      var gaps = keypad ? px(keypad, 'rowGap') * (KEY_ROWS - 1) : 0;
+      s = Math.min(hostW / LCD.W,
+                   (contentH - chrome - gaps - KEY_ROWS * MIN_ROW_H) / LCD.H);
     }
 
-    scale = Math.max(1, s);
+    s = Math.max(1, s);
+    scale = Math.ceil(s * dpr);
     canvas.width = LCD.W * scale;
     canvas.height = LCD.H * scale;
-    canvas.style.width = (LCD.W * scale / dpr) + 'px';
-    canvas.style.height = (LCD.H * scale / dpr) + 'px';
+    canvas.style.width = (LCD.W * s) + 'px';
+    canvas.style.height = (LCD.H * s) + 'px';
     ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = false;
     render();
@@ -479,8 +479,7 @@
     canvas.addEventListener('pointermove', function (e) {
       if (!pts.has(e.pointerId)) return;
       pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
-      var dpr = window.devicePixelRatio || 1;
-      var pxPerLcd = scale / dpr;
+      var pxPerLcd = canvas.getBoundingClientRect().width / LCD.W;
 
       if (pts.size >= 2) {
         var it = Array.from(pts.values());
